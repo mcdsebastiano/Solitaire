@@ -22,7 +22,7 @@ public class Game {
         });
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setBounds(0, 0, 800, 600);
+        frame.setBounds(0, 0, 740, 600);
         frame.setVisible(true);
         frame.add(t);
     }

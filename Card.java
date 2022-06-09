@@ -11,11 +11,14 @@ import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.Font;
 
-class Card extends JComponent implements Comparator<Card> {
 
+
+class Card extends JComponent implements Comparator<Card> {
+    
     private boolean faceUp;
     private char value;
     private byte suit;
+    public short column = 0;
 
     public static final byte WIDTH = 80;
     public static final byte HEIGHT = 100;
@@ -27,6 +30,17 @@ class Card extends JComponent implements Comparator<Card> {
         this.value = v;
         this.suit = s;
     }
+    
+    public boolean contains(int mouseX, int mouseY) {
+        if (mouseY >= this.position.y && mouseY <= this.position.y + this.WIDTH && mouseX >= this.position.x && mouseX <= this.position.x + this.WIDTH) {
+            return true;
+        }
+        return false;
+    }
+    
+    public boolean isFaceUp() {
+        return faceUp;
+    }
 
     public int compare(Card c1, Card c2) {
         return c1.value - c2.value;
@@ -37,16 +51,13 @@ class Card extends JComponent implements Comparator<Card> {
     }
 
     public void flip() {
-        if (faceUp)
-            return;
-
-        this.faceUp = true;
+        this.faceUp = !this.faceUp;
     }
-
+    
     public Coordinate getPosition() {
         return this.position;
     }
-
+    
     public int getX() {
         return this.position.x;
     }
@@ -77,7 +88,7 @@ class Card extends JComponent implements Comparator<Card> {
     }
     
     public String toString() {
-        return (byte)(this.value) + " of  " + this.suit;
+        return this.faceValue() + " of  " + this.suitString();
     }
 
     public void paintComponent(Graphics g) {
@@ -87,9 +98,9 @@ class Card extends JComponent implements Comparator<Card> {
         else
             g.setColor(Color.CYAN);
 
-        g.fillRoundRect(this.position.x, this.position.y, this.WIDTH, this.HEIGHT, 12, 12);
+        g.fillRoundRect(this.position.x, this.position.y, this.WIDTH, this.HEIGHT, 16, 16);
         g.setColor(Color.BLACK);
-        g.drawRoundRect(this.position.x, this.position.y, this.WIDTH, this.HEIGHT, 12, 12);
+        g.drawRoundRect(this.position.x, this.position.y, this.WIDTH, this.HEIGHT, 16, 16);
 
         if (this.faceUp) {
             Font font = new Font("TimesRoman", Font.PLAIN, 36);
@@ -121,5 +132,10 @@ class Coordinate {
 
     public String toString() {
         return "{ X: " + x + ", Y: " + y + " }\n";
+    }
+    
+    public void set(short x, short y) {
+        this.x = x;
+        this.y = y;
     }
 }

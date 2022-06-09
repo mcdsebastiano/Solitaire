@@ -1,9 +1,8 @@
 package Solitaire;
 
-import javax.swing.JComponent;
-
 import javax.swing.event.MouseInputListener;
 import java.awt.event.MouseEvent;
+import javax.swing.JComponent;
 
 class CardListener extends JComponent implements MouseInputListener {
     public CardListener() {}
