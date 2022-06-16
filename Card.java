@@ -11,60 +11,46 @@ import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.Font;
 
+class Coordinate {
+    public short x;
+    public short y;
 
+    public Coordinate(short x, short y) {
+        this.x = x;
+        this.y = y;
+    }
 
-class Card extends JComponent implements Comparator<Card> {
-    
+    public String toString() {
+        return "{ X: " + x + ", Y: " + y + " }\n";
+    }
+
+    public void set(short x, short y) {
+        this.x = x;
+        this.y = y;
+    }
+}
+
+class Card extends JComponent implements Cloneable {
+    public Coordinate position = new Coordinate((short)0, (short)0);
     private boolean faceUp;
     private char value;
     private byte suit;
-    public short column = 0;
 
-    public static final byte WIDTH = 80;
     public static final byte HEIGHT = 100;
-
-    public Coordinate position = new Coordinate((short)0, (short)0);
+    public static final byte WIDTH = 80;
 
     public Card(char v, byte s) {
         this.setMaximumSize(new Dimension(this.WIDTH, this.HEIGHT));
         this.value = v;
         this.suit = s;
     }
-    
-    public boolean contains(int mouseX, int mouseY) {
-        if (mouseY >= this.position.y && mouseY <= this.position.y + this.WIDTH && mouseX >= this.position.x && mouseX <= this.position.x + this.WIDTH) {
-            return true;
-        }
-        return false;
-    }
-    
-    public boolean isFaceUp() {
-        return faceUp;
-    }
 
-    public int compare(Card c1, Card c2) {
-        return c1.value - c2.value;
-    }
-
-    public boolean equals(Card card) {
-        return ((card.suit - this.suit) | (card.value - this.value)) == 0;
-    }
-
-    public void flip() {
-        this.faceUp = !this.faceUp;
-    }
-    
-    public Coordinate getPosition() {
-        return this.position;
-    }
-    
-    public int getX() {
-        return this.position.x;
-    }
-
-    public int getY() {
-        return this.position.y;
-    }
+    public boolean equals(Card card)    { return ((card.suit - this.suit) | (card.value - this.value)) == 0;  }
+    public Coordinate getPosition()     { return this.position;                                               }
+    public boolean isFaceUp()           { return faceUp;                                                      }
+    public void flip()                  { this.faceUp = !this.faceUp;                                         }
+    public int getX()                   { return this.position.x;                                             }
+    public int getY()                   { return this.position.y;                                             }
 
     public void setPosition(short x, short y) {
         this.position.x = x;
@@ -80,13 +66,34 @@ class Card extends JComponent implements Comparator<Card> {
     }
 
     public String faceValue() {
-        return this.value == 1 ? "A" :
-               this.value == 11 ? "J" :
-               this.value == 12 ? "Q" :
-               this.value == 0 ? "K" :
-               (byte)(this.value) + "";
+        return this.value == 0 ? "A" :
+               this.value == 10 ? "J" :
+               this.value == 11 ? "Q" :
+               this.value == 12 ? "K" :
+               (byte)(this.value + 1) + "";
     }
-    
+
+    @Override
+    public Card clone() {
+        Card card = null;
+        try {
+            card = (Card) super.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+
+        return card;
+    }
+
+    @Override
+    public boolean contains(int mouseX, int mouseY) {
+        if (mouseY >= this.position.y && mouseY <= this.position.y + this.WIDTH && mouseX >= this.position.x && mouseX <= this.position.x + this.WIDTH) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public String toString() {
         return this.faceValue() + " of  " + this.suitString();
     }
@@ -117,25 +124,5 @@ class Card extends JComponent implements Comparator<Card> {
             g.drawString(faceValue, this.position.x + 10, this.position.y + 35);
             g.drawString(suitString, this.position.x + this.WIDTH - 35, this.position.y + 35);
         }
-    }
-
-}
-
-class Coordinate {
-    public short x;
-    public short y;
-
-    public Coordinate(short x, short y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    public String toString() {
-        return "{ X: " + x + ", Y: " + y + " }\n";
-    }
-    
-    public void set(short x, short y) {
-        this.x = x;
-        this.y = y;
     }
 }

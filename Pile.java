@@ -9,7 +9,6 @@ import java.awt.Graphics;
 import java.awt.Color;
 
 public class Pile extends JComponent {
-    
     public Coordinate position = new Coordinate((short)0,(short)0);
     public static final Color color = new Color(0,160,0,255);
     public List<Card> cards = new ArrayList<Card>();
@@ -50,7 +49,7 @@ public class Pile extends JComponent {
         this.height -= size > Card.HEIGHT ? Card.HEIGHT - this.offset : 0;
     }
     
-    public void setOffset(short y) {
+    public void setOffset(short y) { 
         this.offset = y;
     }
     
