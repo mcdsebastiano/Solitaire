@@ -32,9 +32,9 @@ class Coordinate {
 
 class Card extends JComponent implements Cloneable {
     public Coordinate position = new Coordinate((short)0, (short)0);
-    private boolean faceUp;
-    private char value;
-    private byte suit;
+    public boolean faceUp;
+    public char value;
+    public byte suit;
 
     public static final byte HEIGHT = 100;
     public static final byte WIDTH = 80;
@@ -43,6 +43,22 @@ class Card extends JComponent implements Cloneable {
         this.setMaximumSize(new Dimension(this.WIDTH, this.HEIGHT));
         this.value = v;
         this.suit = s;
+    }
+
+    public boolean isOppositeTo(Card card) {
+        return (card.isRed() && this.isBlack()) || (card.isBlack() && this.isRed());
+    }
+    
+    public boolean isSameAs(Card card) {
+        return (card.isRed() && this.isRed()) || (card.isBlack() && this.isBlack());
+    }
+
+    public boolean isRed() {
+        return this.suit == 0 || this.suit == 1;
+    }
+
+    public boolean isBlack() {
+        return this.suit == 2 || this.suit == 3;
     }
 
     public boolean equals(Card card)    { return ((card.suit - this.suit) | (card.value - this.value)) == 0;  }
@@ -58,10 +74,10 @@ class Card extends JComponent implements Cloneable {
     }
 
     public String suitString() {
-        return this.suit == 0 ? "\u2666" :
-               this.suit == 1 ? "\u2665" :
-               this.suit == 2 ? "\u2660" :
-               this.suit == 3 ? "\u2663" :
+        return this.suit == 0 ? "\u2666" : // DIAMOND
+               this.suit == 1 ? "\u2665" : // HEART
+               this.suit == 2 ? "\u2660" : // SPADES
+               this.suit == 3 ? "\u2663" : // CLUB
                this.suit + "";
     }
 

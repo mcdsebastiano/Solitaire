@@ -9,7 +9,7 @@ import java.awt.Graphics;
 import java.awt.Color;
 
 public class Pile extends JComponent {
-    public Coordinate position = new Coordinate((short)0,(short)0);
+    public Coordinate position = new Coordinate((short)-Card.WIDTH,(short)-Card.HEIGHT);
     public static final Color color = new Color(0,160,0,255);
     public List<Card> cards = new ArrayList<Card>();
     public short offset = 0;
