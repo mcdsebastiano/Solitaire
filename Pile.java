@@ -71,6 +71,22 @@ public class Pile extends JComponent {
             g.setColor(this.color);
             g.fillRoundRect(this.position.x - 3, this.position.y - 3, Card.WIDTH + 6, Card.HEIGHT + 6, 16, 16);
         }
-        cards.forEach(card -> card.paintComponent(g));
+        
+        if(this.offset > 0) {
+            
+            cards.forEach(card -> card.paintComponent(g));
+            
+        } else if(offset == 0) {
+            
+            
+            if(cards.size() > 0) {
+                if(cards.size() > 1) {
+                    cards.get(cards.size() - 2).paintComponent(g);
+                }
+                cards.get(cards.size() - 1).paintComponent(g);
+                
+            }
+        }
+        
     }
 }

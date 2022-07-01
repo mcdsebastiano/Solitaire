@@ -1,11 +1,9 @@
 package Solitaire;
 
 import java.awt.event.MouseEvent;
-
 import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -51,8 +49,8 @@ public class Tableau extends CardListener {
     // Game State
     public byte stockCount = 51;
     public byte wasteCount = -1;
-    Pile beginningPile;
-    Hand hand;
+    public Pile beginningPile;
+    public Hand hand;
 
     public Tableau() {
         this.hand = new Hand();
@@ -62,45 +60,68 @@ public class Tableau extends CardListener {
         }
 
         for (byte i = 0; i < TOTAL_FOUNDATION_PILES; i++)
-            foundation[i] = new Pile(new Coordinate((short) (350 + (((i - 1) * Card.WIDTH) + PILE_GAP * i)), (short)YMARGIN));
+            this.foundation[i] = new Pile(new Coordinate((short) (350 + (((i - 1) * Card.WIDTH) + PILE_GAP * i)), (short)YMARGIN));
 
         // @FIXME -- don't be lazy
         Collections.shuffle(Deck.cards);
 
         for (byte i = 0; i < Deck.SIZE; i++) {
             Card card = Deck.cards.get(i);
-            stock.add(card);
+            this.stock.add(card);
         }
 
         for (byte i = 0; i < TOTAL_FIELD_PILES; i++) {
-            field[i] = new Pile(new Coordinate((short)(XMARGIN + ((i * Card.WIDTH) + PILE_GAP * i)), (short)200));
-            field[i].setOffset((short)YMARGIN);
+            this.field[i] = new Pile(new Coordinate((short)(XMARGIN + ((i * Card.WIDTH) + PILE_GAP * i)), (short)200));
+            this.field[i].setOffset((short)YMARGIN);
             for (byte k = 0; k < i + 1; k++) {
                 Card card = Deck.cards.get(k + TOTAL_FIELD_PILES * i);
 
                 if (k == i) card.flip();
 
                 byte idx = stock.indexOf(card);
-                stock.cards.remove(idx);
-                field[i].add(card);
-                stockCount--;
+                this.stock.cards.remove(idx);
+                this.field[i].add(card);
+                this.stockCount--;
             }
         }
     }
 
-    public Card getCard(Pile source, short mX, short mY) {
+    public void selectCards(Pile source, short mX, short mY) {
         byte SIZE = (byte)(source.cards.size() - 1);
-        for (byte i = SIZE; i >= 0; i--) {
-            Card card = source.cards.get(i);
+        Card card = null;
+        byte i = 0;
+        for (i = SIZE; i > -1; i--) {
+            card = source.cards.get(i);
 
             short cX = (short)card.getX();
             short cY = (short)card.getY();
 
             if (mY >= cY && mY <= cY + Card.HEIGHT  && mX >= cX && mX <= cX + Card.WIDTH) {
-                return card;
+                break;
             }
         }
-        return null;
+        
+        if(i > -1) {   
+            if(!card.isFaceUp()) {
+                if (i == SIZE) {
+                    card.flip();
+                    this.repaint();
+                }
+            } else {
+                
+                this.hand.xStart = card.position.x;
+                this.hand.yStart = card.position.y;
+                this.hand.xOffset = (short)(mX - card.position.x);
+                this.hand.yOffset = (short)(mY - card.position.y);
+                
+                this.hand.selected.cards = source.cards.subList((int)i, (int)SIZE + 1);
+
+                for (Card c : source.cards)
+                    this.hand.source.add(c.clone());
+
+                this.beginningPile = source;
+            }
+        }
     }
 
     public void buildPile(Pile to, Pile from) {
@@ -110,33 +131,24 @@ public class Tableau extends CardListener {
             to.add(card);
         }
 
-        if (hand.beginningPID == -1)
-            wasteCount--;
+        if (this.hand.beginningPID == -1)
+            this.wasteCount--;
 
-        hand.selected.cards.clear();
-        hand.source.clear();
+        this.hand.selected.cards.clear();
+        this.hand.source.clear();
         this.repaint();
     }
 
     public void undoMove() {
-        byte size = (byte)(hand.selected.cards.size());
+        byte size = (byte)hand.selected.cards.size();
         for (byte i = 0; i < size; i++)
-            hand.selected.get(i).setPosition(hand.xStart, (short)(hand.yStart + i * YMARGIN));
+            this.hand.selected.get(i).setPosition(hand.xStart, (short)(hand.yStart + i * YMARGIN));
 
-        beginningPile.cards = new ArrayList<Card>(hand.source);
-        hand.selected.cards.clear();
-        hand.source.clear();
+        this.beginningPile.cards = new ArrayList<Card>(hand.source);
+        this.hand.selected.cards.clear();
+        this.hand.source.clear();
         this.repaint();
 
-    }
-
-    public void grabCards(Pile source, byte from, byte to) {
-        hand.selected.cards = source.cards.subList((int)from, (int)to);
-
-        for (Card card : source.cards)
-            hand.source.add(card.clone());
-
-        beginningPile = source;
     }
 
     public void mousePressed(MouseEvent e) {
@@ -144,187 +156,146 @@ public class Tableau extends CardListener {
         short mY = (short)e.getY();
 
         // We clicked on the stockpile
-        if (stock.contains(mX, mY)) {
-            if (stockCount >= 0) {
+        if (this.stock.contains(mX, mY)) {
+            if (this.stockCount >= 0) {
                 // Pile is not empty -- Draw One Card
-                hand.selected.cards = stock.cards.subList(stockCount, stockCount + 1);
-                Card top = hand.selected.get(0);
+                this.hand.selected.cards = this.stock.cards.subList(this.stockCount, this.stockCount + 1);
+                Card top = this.hand.selected.get(0);
                 top.flip();
 
-                waste.add(top);
-                wasteCount++;
-                stockCount--;
+                this.waste.add(top);
+                this.wasteCount++;
+                this.stockCount--;
 
             } else {
                 // Pile is empty -- Re-stock with all the cards from the waste pile.
-                // NOTE: The order that the expressions are executed in is important here.
-                Collections.reverse(waste.cards);
-                stockCount = (byte)(waste.cards.size() - 1);
-                hand.selected.cards = waste.cards.subList(0, wasteCount + 1);
-                hand.selected.cards.forEach(card -> card.flip());
-                buildPile(stock, hand.selected);
-                wasteCount = -1;
+                Collections.reverse(this.waste.cards);
+                this.stockCount = (byte)(this.waste.cards.size() - 1);
+                this.hand.selected.cards = this.waste.cards.subList(0, this.wasteCount + 1);
+                this.hand.selected.cards.forEach(card -> card.flip());
+                this.buildPile(this.stock, this.hand.selected);
+                this.wasteCount = -1;
             }
-            hand.selected.cards.clear();
+            this.hand.selected.cards.clear();
             this.repaint();
             return;
-        }
-
-        if (wasteCount >= 0 && waste.contains(mX, mY)) {
+        } 
+        if (this.wasteCount >= 0 && this.waste.contains(mX, mY)) {
             // We clicked on the wastepile, get the top card.
-            Card top = waste.cards.get(wasteCount);
+            Card top = waste.cards.get(this.wasteCount);
+
             if (top.contains(mX, mY)) {
-                hand.beginningPID = -1;
-                hand.xStart = top.position.x;
-                hand.yStart = top.position.y;
-                hand.xOffset = (short)(mX - top.position.x);
-                hand.yOffset = (short)(mY - top.position.y);
-
-                this.grabCards(waste, wasteCount, (byte)(wasteCount + 1));
-
+                this.hand.beginningPID = -1;
+                this.selectCards(waste, mX, mY);
             }
+            
         } else {
+            // We clicked somewhere else
+            this.hand.normalX = (float)(PLAYABLE_REGION) / mX;
+            this.hand.beginningPID = (byte)(TOTAL_FIELD_PILES / hand.normalX);
 
-            hand.normalX = (float)(PLAYABLE_REGION) / mX;
-            hand.beginningPID = (byte)(TOTAL_FIELD_PILES / hand.normalX);
-
-            if (hand.beginningPID >= TOTAL_FIELD_PILES)
+            if (this.hand.beginningPID >= TOTAL_FIELD_PILES)
                 return;
-
-            Card selected = this.getCard(field[hand.beginningPID], mX, mY);
-
-            boolean foundation = false;
-            if (selected == null && hand.beginningPID >= 3) {
-                selected = this.getCard(this.foundation[hand.beginningPID - 3], mX, mY);
-                foundation = true;
-            }
-
-            if (selected == null)
-                return;
-
-            if (selected.isFaceUp()) {
-                // grab cards
-                hand.xStart = selected.position.x;
-                hand.yStart = selected.position.y;
-                hand.xOffset = (short)(mX - selected.position.x);
-                hand.yOffset = (short)(mY - selected.position.y);
-
-                byte size = 0;
-                byte idx = 0;
-                // @Cleanup
-                if (foundation) {
-
-                    size = (byte)this.foundation[hand.beginningPID - 3].cards.size();
-                    idx = (this.foundation[hand.beginningPID - 3].indexOf(selected));
-                    
-                    this.grabCards(this.foundation[hand.beginningPID - 3], idx, size);
-
-                } else {
-
-                    size = (byte)field[hand.beginningPID].cards.size();
-                    idx = (field[hand.beginningPID].indexOf(selected));
-                    
-                    this.grabCards(this.field[hand.beginningPID], idx, size);
-                }
-
-            } else {
-                byte idx = field[hand.beginningPID].indexOf(selected);
-                if (idx == field[hand.beginningPID].cards.size() - 1)
-                    selected.flip();
-
-            }
+            
+            // did we click on the field?
+            this.selectCards(this.field[hand.beginningPID], mX, mY);
+            // or did we click on the foundation?
+            if (this.hand.selected.cards.isEmpty() && this.hand.beginningPID >= 3) 
+                this.selectCards(this.foundation[this.hand.beginningPID - 3], mX, mY);
+            
         }
-        this.repaint();
+        
     }
 
     public void mouseDragged(MouseEvent e) {
-        if (!hand.selected.cards.isEmpty()) {
+        if (!this.hand.selected.cards.isEmpty()) {
             short mX = (short)e.getX();
             short mY = (short)e.getY();
 
-            for (byte i = 0; i < hand.selected.cards.size(); i++) {
-                Card card = hand.selected.cards.get(i);
-                card.setPosition((short)(mX - hand.xOffset), (short)(mY - hand.yOffset + (i * YMARGIN)));
+            for (byte i = 0; i < this.hand.selected.cards.size(); i++) {
+                Card card = this.hand.selected.cards.get(i);
+                card.setPosition((short)(mX - this.hand.xOffset), (short)(mY - this.hand.yOffset + (i * YMARGIN)));
             }
             this.repaint();
         }
     }
-    
+
     // @Cleanup
     public void mouseReleased(MouseEvent e) {
-        if (!hand.selected.cards.isEmpty()) {
+        if (!this.hand.selected.cards.isEmpty()) {
 
             short mX = (short)e.getX();
             short mY = (short)e.getY();
 
-            hand.normalX =  (float)(PLAYABLE_REGION) / mX;
-            hand.endingPID = (byte)(TOTAL_FIELD_PILES / hand.normalX);
+            this.hand.normalX =  (float)(PLAYABLE_REGION) / mX;
+            this.hand.endingPID = (byte)(TOTAL_FIELD_PILES / this.hand.normalX);
 
-            Card first = hand.selected.cards.get(0);
+            Card first = this.hand.selected.cards.get(0);
             Card last = null;
-
             byte size = 0;
 
+            //
+            // Foundation Rules
+            //
+
             if (mY < 200) {
-                
-                if (hand.selected.cards.size() > 1) {
-                    undoMove();
+                // Only make a play for the foundation piles if we are carrying one card.
+                if (this.hand.selected.cards.size() > 1 || this.hand.endingPID < 3) {
+                    this.undoMove();
                     return;
                 }
 
-
-                if (hand.endingPID <= 2) {
-                    undoMove();
-                    return;
-                }
-
-                size = (byte)foundation[hand.endingPID - 3].cards.size();
+                // Determine if the Pile is empty before moving.
+                size = (byte)this.foundation[hand.endingPID - 3].cards.size();
 
                 if (size > 0) {
+                    // The pile isn't empty.
+                    // Attempt to build the pile.
+                    last = this.foundation[hand.endingPID - 3].get(size - 1);
 
-                    last = foundation[hand.endingPID - 3].get(size - 1);
-
-                    if ((first.suit == last.suit) && (last.value - first.value == -1))
-                        this.buildPile(foundation[hand.endingPID - 3], hand.selected);
+                    if (first.suit == last.suit && first.value - last.value == 1)
+                        this.buildPile(this.foundation[this.hand.endingPID - 3], this.hand.selected);
                     else
-                        undoMove();
+                        this.undoMove();
 
                 } else {
-
+                    // The Pile is empty.
+                    // Only move to an open slot if the first card is an Ace.
                     if (first.value == 0)
-                        this.buildPile(foundation[hand.endingPID - 3], hand.selected);
+                        this.buildPile(this.foundation[hand.endingPID - 3], this.hand.selected);
                     else
-                        undoMove();
-
+                        this.undoMove();
 
                 }
                 return;
             }
 
+            //
+            // Field Rules
+            //
 
-            if (hand.endingPID < 0 || hand.endingPID >= TOTAL_FIELD_PILES || hand.beginningPID == hand.endingPID) {
-                undoMove();
+            if (this.hand.endingPID < 0 || this.hand.endingPID >= TOTAL_FIELD_PILES || this.hand.beginningPID == this.hand.endingPID) {
+                this.undoMove();
                 return;
             }
 
-            size = (byte)field[hand.endingPID].cards.size();
-
+            size = (byte)this.field[this.hand.endingPID].cards.size();
             if (size > 0) {
 
-                last = field[hand.endingPID].get(size - 1);
+                last = this.field[this.hand.endingPID].get(size - 1);
 
-                if (last.isFaceUp() && last.isOppositeTo(first) && (first.value - last.value == -1))
-                    this.buildPile(field[hand.endingPID], hand.selected);
+                if (last.isFaceUp() && last.isOppositeTo(first) && first.value - last.value == -1)
+                    this.buildPile(this.field[this.hand.endingPID], this.hand.selected);
                 else
-                    undoMove();
+                    this.undoMove();
 
 
             } else {
-
-                if (first.value == 12) 
-                    this.buildPile(field[hand.endingPID], hand.selected);
-                else 
-                    undoMove();
+                // Only move to an open slot if the first card is a King
+                if (first.value == 12)
+                    this.buildPile(this.field[this.hand.endingPID], this.hand.selected);
+                else
+                    this.undoMove();
 
             }
         }
@@ -346,8 +317,8 @@ public class Tableau extends CardListener {
             this.field[i].paintComponent(g);
         }
 
-        if (hand.selected != null) {
-            hand.selected.paintComponent(g);
-        }
+        // if (hand.selected != null) {
+        // hand.selected.paintComponent(g);
+        // }
     }
 }
