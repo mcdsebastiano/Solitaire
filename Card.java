@@ -48,7 +48,7 @@ class Card extends JComponent implements Cloneable {
     public boolean isOppositeTo(Card card) {
         return (card.isRed() && this.isBlack()) || (card.isBlack() && this.isRed());
     }
-    
+
     public boolean isSameAs(Card card) {
         return (card.isRed() && this.isRed()) || (card.isBlack() && this.isBlack());
     }
