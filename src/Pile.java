@@ -1,10 +1,8 @@
 package Solitaire;
 
 import javax.swing.JComponent;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import java.awt.Graphics;
 import java.awt.Color;
 

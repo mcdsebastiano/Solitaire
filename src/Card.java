@@ -1,12 +1,6 @@
 package Solitaire;
 
-import java.util.Comparator;
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.swing.JComponent;
-
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.Font;
@@ -40,7 +34,7 @@ class Card extends JComponent implements Cloneable {
     public static final byte WIDTH = 80;
 
     public Card(char v, byte s) {
-        this.setMaximumSize(new Dimension(this.WIDTH, this.HEIGHT));
+        this.setMaximumSize(new java.awt.Dimension(this.WIDTH, this.HEIGHT));
         this.value = v;
         this.suit = s;
     }

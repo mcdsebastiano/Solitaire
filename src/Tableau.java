@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.ArrayList;
 import java.util.List;
 
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Toolkit;
 import java.awt.Color;
@@ -21,7 +20,7 @@ class Selection {
 }
 
 public class Tableau extends CardListener {
-    public Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+    public java.awt.Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     public final short SCREENHEIGHT = (short)screenSize.getHeight();
     public final short SCREENWIDTH = (short)screenSize.getWidth();
 
